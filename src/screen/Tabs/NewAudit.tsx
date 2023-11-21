@@ -9,6 +9,7 @@ import {
   Text,
   ToastAndroid,
   View,
+  ScrollView,
 } from 'react-native';
 import React, {useState} from 'react';
 import {
@@ -24,10 +25,10 @@ import {RequestModal} from '../../components/RequestModal';
 import {useClient} from '../../store/store';
 import Geolocation, {GeoPosition} from 'react-native-geolocation-service';
 import appConfig from '../../../app.json';
-import {convertFileToCsv, exportCSV} from '../../types/Tools';
+import {exportCSV} from '../../types/Tools';
+import CopyReadHash from '../../components/CopyReadHash';
 
 const NewAudit = () => {
-  const clientStore = useClient(state => state.StoreClient);
   const client = useClient(state => state.client);
   const [modalVisible, setModalVisible] = useState(false);
   const [rpcResponse, setRpcResponse] = useState<any>();
@@ -178,13 +179,13 @@ const NewAudit = () => {
       onModalClose();
       return;
     }
-    // const receipt = await contract.addField(
-    //   projectid,
-    //   plotid,
-    //   lattitude,
-    //   longitude,
-    //   auditid,
-    // );
+    const receipt = await contract.addField(
+      projectid,
+      plotid,
+      lattitude,
+      longitude,
+      auditid,
+    );
     const receiptOb: Audit[] = [
       {
         projectID: projectid,
@@ -197,12 +198,10 @@ const NewAudit = () => {
     await exportCSV(receiptOb)
       .then(data => console.log(data))
       .catch(err => console.log(err));
-    // const hash = receipt.hash;
-
-    // console.log('receipt', receipt);
+    const hash = receipt.hash;
     return {
       method: 'write contract',
-      // response: hash,
+      response: hash,
     };
   };
 
@@ -250,7 +249,13 @@ const NewAudit = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      contentContainerStyle={{
+        flexDirection: 'column',
+        gap: 20,
+        paddingBottom: 40,
+      }}
+      style={styles.container}>
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>Project ID</Text>
         <TextInput
@@ -269,6 +274,22 @@ const NewAudit = () => {
           onChangeText={(text: any) => setPlotId(text)}
         />
       </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Government Photo ID</Text>
+        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Owner Photo ID</Text>
+        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Owner FirstName</Text>
+        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Gat No</Text>
+        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
+      </View>
       {location !== null ? (
         <View style={styles.LocationCoordinates}>
           <Text style={styles.LocationCoordinatesText}>
@@ -280,19 +301,18 @@ const NewAudit = () => {
         </View>
       ) : (
         <TouchableOpacity style={styles.button} onPress={onGeoLocationAccess}>
-          <Text style={styles.buttonText}>Access Location</Text>
+          <Text style={[styles.buttonText, {color: 'red'}]}>
+            Click Now To display your current latitude and longitude
+          </Text>
         </TouchableOpacity>
       )}
-      {/* <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Plot ID</Text>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Plot Area</Text>
         <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
       </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Plot ID</Text>
-        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
-      </View> */}
+
       {!auditid ? (
-        <TouchableOpacity style={styles.AuditIDgetButton} onPress={getAuditID}>
+        <TouchableOpacity style={styles.button} onPress={getAuditID}>
           <Text style={styles.AuditIDgetText}>get your Audit ID</Text>
         </TouchableOpacity>
       ) : (
@@ -302,14 +322,15 @@ const NewAudit = () => {
         style={[styles.button, !isConnected && styles.buttonDisabled]}
         disabled={!isConnected}
         onPress={onAction(onWriteContract)}>
-        <Text style={styles.buttonText}>Submit</Text>
+        <Text style={[styles.buttonText, {color: 'black'}]}>Submit</Text>
       </TouchableOpacity>
       <RequestModal
         isVisible={modalVisible}
         onClose={onModalClose}
         isLoading={loading}
       />
-    </View>
+      {rpcResponse && <CopyReadHash hash={rpcResponse?.response} />}
+    </ScrollView>
   );
 };
 
@@ -342,7 +363,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgb(250 204 21)',
     borderRadius: 20,
-    width: 200,
+    minWidth: 200,
     height: 50,
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.1)',
@@ -352,7 +373,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#999',
   },
   buttonText: {
-    color: 'black',
     fontWeight: '700',
   },
   LocationCoordinates: {
@@ -360,7 +380,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: 'rgb(253 224 71)',
+    // backgroundColor: 'rgb(253 224 71)',
+    backgroundColor: 'white',
     padding: 10,
     paddingHorizontal: 20,
     borderRadius: 10,

@@ -11,14 +11,12 @@ import {
   useWalletConnectModal,
   WalletConnectModal,
 } from '@walletconnect/modal-react-native';
-import {numberToHex, sanitizeHex} from '@walletconnect/encoding';
 import {ethers} from 'ethers';
 import {Web3Provider} from '@ethersproject/providers';
-import ContractUtils from '../../utils/ContractUtils';
 import ConfigUtils from '../../utils/ConfigUtils';
 import {RequestModal} from '../RequestModal';
 import Clipboard from '@react-native-clipboard/clipboard';
-import {useNavigation} from '@react-navigation/native';
+import {Link, useNavigation} from '@react-navigation/native';
 import {useClient} from '../../store/store';
 
 const HomeHeader = () => {
@@ -28,11 +26,9 @@ const HomeHeader = () => {
   const [rpcResponse, setRpcResponse] = useState<any>();
   const [loading, setLoading] = useState(false);
   const {isConnected, provider, open} = useWalletConnectModal();
-  const navigation = useNavigation();
   useEffect(() => {
     if (isConnected && provider) {
       const _client = new ethers.providers.Web3Provider(provider);
-
       setClient(_client);
       clientStore(_client);
     }
@@ -58,6 +54,7 @@ const HomeHeader = () => {
     setRpcResponse(response);
     setLoading(false);
   };
+  const navigatestring: string = 'notification'; //fot typos errors in navigation.navigate
   return (
     <View style={styles.container}>
       <Text style={styles.Logo}>BricsHub</Text>
@@ -69,13 +66,14 @@ const HomeHeader = () => {
             {!isConnected ? 'Connect Wallet' : 'Disconnect'}
           </Text>
         </TouchableOpacity>
-        <Pressable
-          style={styles.NotificationIcon}
-          onPress={() => navigation.navigate('notifications')}>
-          <FontAwesome name="bell-o" size={24} color="rgb(156 163 175)" />
-          <Text style={styles.NotificationNumber}>{''}</Text>
-        </Pressable>
+        <Link to={'/notifications'}>
+          <View style={styles.NotificationIcon}>
+            <FontAwesome name="bell-o" size={24} color="rgb(156 163 175)" />
+            <Text style={styles.NotificationNumber}>{''}</Text>
+          </View>
+        </Link>
       </View>
+
       <WalletConnectModal
         projectId={'a724fd6f434dcc64058405875ea4a634'}
         providerMetadata={ConfigUtils.providerMetadata}
