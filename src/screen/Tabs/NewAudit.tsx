@@ -11,7 +11,7 @@ import {
   View,
   ScrollView,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   useWalletConnectModal,
   WalletConnectModal,
@@ -27,10 +27,13 @@ import Geolocation, {GeoPosition} from 'react-native-geolocation-service';
 import appConfig from '../../../app.json';
 import {exportCSV} from '../../types/Tools';
 import CopyReadHash from '../../components/CopyReadHash';
+import {getTotalAuditCount, submitAudit} from '../../utils/SRAudit';
+import ProgressCurcular from '../../components/ProgressCurcular';
 
 const NewAudit = () => {
   const client = useClient(state => state.client);
   const [modalVisible, setModalVisible] = useState(false);
+  const [AudtCount, setAuditCount] = useState<number>();
   const [rpcResponse, setRpcResponse] = useState<any>();
   const [loading, setLoading] = useState(false);
   const {isConnected, provider, open} = useWalletConnectModal();
@@ -41,20 +44,36 @@ const NewAudit = () => {
   const [projectid, setProjectId] = useState<string>();
   const [plotid, setPlotId] = useState<string>();
 
+  useEffect(() => {
+    if (Number(lattitude) && Number(longitude) >= 0) {
+      const openGps = (lat: number, lng: number) => {
+        var scheme = Platform.OS === 'ios' ? 'maps:' : 'geo:';
+        var url = scheme + `${lat},${lng}`;
+        Linking.openURL(url);
+      };
+
+      openGps(Number(lattitude), Number(longitude));
+    }
+    (async () => {
+      const totalCount = await getTotalAuditCount();
+      setAuditCount(totalCount);
+    })();
+  }, [lattitude, longitude]);
+
   function getCurrentDate() {
     const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
     ];
 
     const currentDate = new Date();
@@ -141,6 +160,12 @@ const NewAudit = () => {
   const onResponse = (response: any) => {
     setRpcResponse(response);
     setLoading(false);
+    ToastAndroid.showWithGravity(
+      'please fill all the details',
+      ToastAndroid.BOTTOM,
+      ToastAndroid.LONG,
+    );
+    submitAudit();
   };
   const onModalClose = () => {
     setModalVisible(false);
@@ -164,7 +189,13 @@ const NewAudit = () => {
   };
 
   const onWriteContract = async () => {
+    if (!projectid && !plotid && !auditid && !lattitude && !longitude) {
+      ToastAndroid.showWithGravity('fill all of the fields carefully', 23, 23);
+      onModalClose();
+      return;
+    }
     if (!client) {
+      onModalClose();
       return;
     }
     const [address] = await client.listAccounts();
@@ -174,11 +205,6 @@ const NewAudit = () => {
       ContractUtils.goerliABI,
       signer,
     );
-    if (!projectid && !plotid && !auditid && !lattitude && !longitude) {
-      Alert.alert('fill all of the fields carefully');
-      onModalClose();
-      return;
-    }
     const receipt = await contract.addField(
       projectid,
       plotid,
@@ -242,95 +268,122 @@ const NewAudit = () => {
   const getAuditID = () => {
     if (projectid && plotid) {
       const formattedDate = getCurrentDate();
-      setAuditid(`${projectid}${plotid}${formattedDate}`);
+      setAuditid(
+        `${projectid}${plotid}${formattedDate}${
+          '0' + (auditid ? auditid : 0 + 1).toString()
+        }`,
+      );
     } else {
-      Alert.alert('please fill all the details');
+      ToastAndroid.showWithGravity(
+        'please fill all the details',
+        ToastAndroid.BOTTOM,
+        ToastAndroid.LONG,
+      );
     }
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        flexDirection: 'column',
-        gap: 20,
-        paddingBottom: 40,
-      }}
-      style={styles.container}>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Project ID</Text>
-        <TextInput
-          placeholder="enter your Project ID"
-          style={styles.inputField}
-          value={projectid}
-          onChangeText={(text: any) => setProjectId(text)}
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Plot ID</Text>
-        <TextInput
-          placeholder="enter your Plot ID"
-          style={styles.inputField}
-          value={plotid}
-          onChangeText={(text: any) => setPlotId(text)}
-        />
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Government Photo ID</Text>
-        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Owner Photo ID</Text>
-        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Owner FirstName</Text>
-        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
-      </View>
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Gat No</Text>
-        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
-      </View>
-      {location !== null ? (
-        <View style={styles.LocationCoordinates}>
-          <Text style={styles.LocationCoordinatesText}>
-            Latitude : {lattitude}
-          </Text>
-          <Text style={styles.LocationCoordinatesText}>
-            Longitude : {longitude}
-          </Text>
+    <View style={{paddingBottom: 40}}>
+      <ProgressCurcular />
+      <ScrollView
+        contentContainerStyle={{
+          flexDirection: 'column',
+          gap: 20,
+          paddingBottom: 40,
+        }}
+        style={styles.container}>
+        <Text>Todays Audit Count {AudtCount}</Text>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Project ID</Text>
+          <TextInput
+            placeholder="enter your Project ID"
+            style={styles.inputField}
+            value={projectid}
+            onChangeText={(text: any) => setProjectId(text)}
+          />
         </View>
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={onGeoLocationAccess}>
-          <Text style={[styles.buttonText, {color: 'red'}]}>
-            Click Now To display your current latitude and longitude
-          </Text>
-        </TouchableOpacity>
-      )}
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Plot Area</Text>
-        <TextInput placeholder="enter your Plot ID" style={styles.inputField} />
-      </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Plot ID</Text>
+          <TextInput
+            placeholder="enter your Plot ID"
+            style={styles.inputField}
+            value={plotid}
+            onChangeText={(text: any) => setPlotId(text)}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Government Photo ID</Text>
+          <TextInput
+            placeholder="enter your Plot ID"
+            style={styles.inputField}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Owner Photo ID</Text>
+          <TextInput
+            placeholder="enter your Plot ID"
+            style={styles.inputField}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Owner FirstName</Text>
+          <TextInput
+            placeholder="enter your Plot ID"
+            style={styles.inputField}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Gat No</Text>
+          <TextInput
+            placeholder="enter your Plot ID"
+            style={styles.inputField}
+          />
+        </View>
+        {location !== null ? (
+          <View style={styles.LocationCoordinates}>
+            <Text style={styles.LocationCoordinatesText}>
+              Latitude : {lattitude}
+            </Text>
+            <Text style={styles.LocationCoordinatesText}>
+              Longitude : {longitude}
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.button} onPress={onGeoLocationAccess}>
+            <Text style={[styles.buttonText, {color: 'rgb(252 165 165)'}]}>
+              Click Now To display your current latitude and longitude
+            </Text>
+          </TouchableOpacity>
+        )}
+        <View style={styles.inputContainer}>
+          <Text style={styles.inputLabel}>Plot Area</Text>
+          <TextInput
+            placeholder="enter your Plot ID"
+            style={styles.inputField}
+          />
+        </View>
 
-      {!auditid ? (
-        <TouchableOpacity style={styles.button} onPress={getAuditID}>
-          <Text style={styles.AuditIDgetText}>get your Audit ID</Text>
+        {!auditid ? (
+          <TouchableOpacity style={styles.button} onPress={getAuditID}>
+            <Text style={styles.AuditIDgetText}>get your Audit ID</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.inputLabel}>{auditid}</Text>
+        )}
+        <TouchableOpacity
+          style={[styles.button, !isConnected && styles.buttonDisabled]}
+          disabled={!isConnected}
+          onPress={onAction(onWriteContract)}>
+          <Text style={[styles.buttonText, {color: 'black'}]}>Submit</Text>
         </TouchableOpacity>
-      ) : (
-        <Text style={styles.inputLabel}>{auditid}</Text>
-      )}
-      <TouchableOpacity
-        style={[styles.button, !isConnected && styles.buttonDisabled]}
-        disabled={!isConnected}
-        onPress={onAction(onWriteContract)}>
-        <Text style={[styles.buttonText, {color: 'black'}]}>Submit</Text>
-      </TouchableOpacity>
-      <RequestModal
-        isVisible={modalVisible}
-        onClose={onModalClose}
-        isLoading={loading}
-      />
-      {rpcResponse && <CopyReadHash hash={rpcResponse?.response} />}
-    </ScrollView>
+        <RequestModal
+          isVisible={modalVisible}
+          onClose={onModalClose}
+          isLoading={loading}
+        />
+        {rpcResponse && <CopyReadHash hash={rpcResponse?.response} />}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -361,7 +414,7 @@ const styles = StyleSheet.create({
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgb(250 204 21)',
+    backgroundColor: 'rgb(22 163 74)',
     borderRadius: 20,
     minWidth: 200,
     height: 50,
@@ -392,7 +445,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   AuditIDgetButton: {
-    backgroundColor: 'rgb(253 224 71)',
+    backgroundColor: 'rgb(22 163 74)',
     padding: 10,
     borderRadius: 10,
     elevation: 3,

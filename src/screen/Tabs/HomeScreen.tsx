@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   ScrollView,
   View,
+  ToastAndroid,
+  Pressable,
+  Platform,
+  Linking,
 } from 'react-native';
 import {ethers} from 'ethers';
-import {
-  useWalletConnectModal,
-  WalletConnectModal,
-} from '@walletconnect/modal-react-native';
+import {useWalletConnectModal} from '@walletconnect/modal-react-native';
 import ContractUtils from '../../utils/ContractUtils';
+import LinearGradient from 'react-native-linear-gradient';
 
 const HomeScreen = () => {
   const client = useClient(state => state.client);
@@ -21,6 +23,10 @@ const HomeScreen = () => {
 
   const onReadContract = async () => {
     if (!isConnected) {
+      ToastAndroid.show(
+        `You haven't connected your wallet yet`,
+        ToastAndroid.SHORT,
+      );
       return;
     }
     try {
@@ -49,24 +55,34 @@ const HomeScreen = () => {
         data: totalSupply,
       };
     } catch (error: any) {
-      console.log(error.message || error);
+      ToastAndroid.showWithGravity(
+        `${error.code || error.error.message || error.message || error}`,
+        ToastAndroid.SHORT,
+        ToastAndroid.CENTER,
+      );
+      console.log(error);
     }
   };
-
   return (
-    <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={onReadContract} style={styles.onReadButton}>
-        <Text style={{color: 'black', textAlign: 'center'}}>OnRead</Text>
-      </TouchableOpacity>
-      <View style={styles.dataCardContainer}>
-        {response?.map((audit: any, index: any) => (
-          <View key={index} style={styles.dataCard}>
-            <Text>{audit.projectID}</Text>
-            <Text>{audit.plotIDwe}</Text>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+    <LinearGradient
+      colors={['#def7eb', '#def7eb', '#ffffff']}
+      start={{x: 1, y: 1}}
+      end={{x: 0, y: 1}}
+      style={{minHeight: '100%'}}>
+      <ScrollView style={styles.container}>
+        <TouchableOpacity onPress={onReadContract} style={styles.onReadButton}>
+          <Text style={{color: 'black', textAlign: 'center'}}>OnRead</Text>
+        </TouchableOpacity>
+        <View style={styles.dataCardContainer}>
+          {response?.map((audit: any, index: any) => (
+            <View key={index} style={styles.dataCard}>
+              <Text>{audit.projectID}</Text>
+              <Text>{audit.plotIDwe}</Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
@@ -92,5 +108,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 10,
     elevation: 5,
+    margin: 5,
+    borderRadius: 10,
   },
 });

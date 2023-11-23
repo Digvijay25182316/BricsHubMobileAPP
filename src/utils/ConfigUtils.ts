@@ -15,7 +15,7 @@ const sessionParams = {
   namespaces: {
     eip155: {
       methods: ['eth_sendTransaction', 'personal_sign'],
-      chains: ['eip155:1'],
+      chains: ['eip155:11155111'],
       events: ['chainChanged', 'accountsChanged'],
       rpcMap: {},
     },

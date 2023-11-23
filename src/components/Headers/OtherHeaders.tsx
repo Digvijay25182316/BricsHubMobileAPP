@@ -1,10 +1,10 @@
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import {useRoute} from '@react-navigation/native';
+import {Link, useRoute} from '@react-navigation/native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {useNavigation} from '@react-navigation/native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const OtherHeaders = () => {
   const Route = useRoute();
@@ -14,26 +14,28 @@ const OtherHeaders = () => {
       style={
         Route.name !== 'notifications'
           ? styles.container
-          : styles.NotificationLessContainer
+          : styles.NotificationLeftContainer
       }>
-      <Pressable
-        style={{backgroundColor: 'black', borderRadius: 30}}
-        onPress={() => navigation.goBack()}>
-        <AntDesign name="leftcircle" size={30} color="rgb(243 244 246)" />
-      </Pressable>
-      <Text
-        style={
-          Route.name !== 'notifications'
-            ? styles.HeaderText
-            : styles.notificationLessBack
-        }>
-        {Route.name}
-      </Text>
+      <View style={styles.NotificationLeftContainer}>
+        <Pressable onPress={() => navigation.goBack()}>
+          <MaterialCommunityIcons name="pan-left" size={50} color="black" />
+        </Pressable>
+        <Text
+          style={
+            Route.name !== 'notifications'
+              ? styles.HeaderText
+              : styles.notificationLeftBack
+          }>
+          {Route.name}
+        </Text>
+      </View>
       {Route.name !== 'notifications' && (
-        <View style={styles.NotificationIcon}>
-          <FontAwesome name="bell-o" size={24} color="rgb(156 163 175)" />
-          <Text style={styles.NotificationNumber}>{''}</Text>
-        </View>
+        <Link to={'/notifications'}>
+          <View style={styles.NotificationIcon}>
+            <FontAwesome name="bell-o" size={24} color="rgb(156 163 175)" />
+            <Text style={styles.NotificationNumber}>{''}</Text>
+          </View>
+        </Link>
       )}
     </View>
   );
@@ -68,16 +70,13 @@ const styles = StyleSheet.create({
     right: 3,
     borderRadius: 100,
   },
-  NotificationLessContainer: {
+  NotificationLeftContainer: {
     flexDirection: 'row',
     backgroundColor: 'white',
     minHeight: 60,
     alignItems: 'center',
-    paddingHorizontal: 20,
-    elevation: 5,
-    zIndex: 100,
   },
-  notificationLessBack: {
+  notificationLeftBack: {
     flex: 1,
     textAlign: 'center',
     fontSize: 20,

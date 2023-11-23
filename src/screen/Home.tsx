@@ -9,6 +9,7 @@ import IonIcons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import NewAudit from './Tabs/NewAudit';
 import OtherHeaders from '../components/Headers/OtherHeaders';
+import {BlurView} from '@react-native-community/blur';
 
 const Tab = createBottomTabNavigator();
 
