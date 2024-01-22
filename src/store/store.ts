@@ -1,7 +1,8 @@
 import {create} from 'zustand';
 
-interface ModalControllState {
-  ModalVisible: boolean;
+interface ColorSchemeState {
+  isDark: boolean;
+  setIsDark: (value: boolean) => void;
 }
 
 interface LoadingControllState {
@@ -13,9 +14,9 @@ interface ClientState {
   StoreClient: (value: any) => void;
 }
 
-export const useModalControlState = create<ModalControllState>(set => ({
-  ModalVisible: false,
-  makeVisible: (value: boolean) => set({ModalVisible: value}),
+export const useIsDarkController = create<ColorSchemeState>(set => ({
+  isDark: false,
+  setIsDark: (value: boolean) => set({isDark: value}),
 }));
 
 export const useLoadingControllState = create<LoadingControllState>(set => ({

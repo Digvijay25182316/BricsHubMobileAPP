@@ -61,7 +61,7 @@ export const exportCSV = async (formData: Audit[]) => {
       name: `${formattedTimestamp}Auditdata.csv`,
       type: 'text/csv',
     });
-    formData.append('email', 'nikhil@bricshub.com');
+    formData.append('email', 'digedake@gmail.com');
 
     const serverEndpoint = 'https://microservice-kc8d.onrender.com';
 
@@ -79,7 +79,7 @@ export const exportCSV = async (formData: Audit[]) => {
           filename: `${formattedTimestamp}Auditdata.csv`,
           data: buffer,
         },
-        {name: 'email', data: 'nikhil@bricshub.com '},
+        {name: 'email', data: 'digedake@gmail.com '},
       ],
     )
       .then(({data}) => console.log(data))

@@ -9,3 +9,16 @@ interface Audit {
   longitude: string | undefined;
   AuditID: string | undefined;
 }
+
+type Profile = {
+  name: string;
+  email: string;
+  wallet_address: string;
+  createdAt: string;
+};
+
+type notification = {
+  category: string;
+  message: string;
+  createdAt: string;
+};

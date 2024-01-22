@@ -1,19 +1,32 @@
 import './config/polyfills';
-import React from 'react';
-import {StyleSheet} from 'react-native';
+import React, {useEffect} from 'react';
+import {StyleSheet, Appearance} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from './screen/Home';
-import Notifications from './screen/Notification';
 import {NavigationContainer} from '@react-navigation/native';
+import AuthScreen from './screen/InititalScreens/AuthScreen';
+import SetProfile from './screen/InititalScreens/SetProfile';
+import SettingsScreen from './screen/SettingsScreen';
+import {useIsDarkController} from './store/store';
 
 function App(): JSX.Element {
   const Stack = createNativeStackNavigator();
+  const setIsDark = useIsDarkController(state => state.setIsDark);
+  useEffect(() => {
+    if (Appearance.getColorScheme() === 'light') {
+      setIsDark(false);
+    } else {
+      setIsDark(true);
+    }
+  }, []);
 
   return (
     <NavigationContainer independent={true}>
       <Stack.Navigator screenOptions={{headerShown: false}}>
-        <Stack.Screen name="nome" component={Home} />
-        <Stack.Screen name="notifications" component={Notifications} />
+        <Stack.Screen name="auth" component={AuthScreen} />
+        <Stack.Screen name="profile" component={SetProfile} />
+        <Stack.Screen name="home" component={Home} />
+        <Stack.Screen name="settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

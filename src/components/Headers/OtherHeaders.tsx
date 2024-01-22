@@ -1,40 +1,26 @@
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View, Appearance} from 'react-native';
 import React from 'react';
 import {Link, useRoute} from '@react-navigation/native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import {useNavigation} from '@react-navigation/native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useIsDarkController} from '../../store/store';
 
 const OtherHeaders = () => {
   const Route = useRoute();
-  const navigation = useNavigation();
+  const isDark = useIsDarkController(state => state.isDark);
   return (
-    <View
-      style={
-        Route.name !== 'notifications'
-          ? styles.container
-          : styles.NotificationLeftContainer
-      }>
+    <View style={!isDark ? styles.ContainerLight : styles.ContainerDark}>
       <View style={styles.NotificationLeftContainer}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <MaterialCommunityIcons name="pan-left" size={50} color="black" />
-        </Pressable>
-        <Text
-          style={
-            Route.name !== 'notifications'
-              ? styles.HeaderText
-              : styles.notificationLeftBack
-          }>
+        <Text style={!isDark ? styles.HeaderTextLight : styles.HeaderTextDark}>
           {Route.name}
         </Text>
       </View>
-      {Route.name !== 'notifications' && (
-        <Link to={'/notifications'}>
-          <View style={styles.NotificationIcon}>
-            <FontAwesome name="bell-o" size={24} color="rgb(156 163 175)" />
-            <Text style={styles.NotificationNumber}>{''}</Text>
-          </View>
+      {Route.name !== 'settings' && (
+        <Link to={'/settings'} style={styles.NotificationIcon}>
+          <Ionicons
+            name="settings-outline"
+            size={24}
+            color={!isDark ? 'black' : 'white'}
+          />
         </Link>
       )}
     </View>
@@ -44,19 +30,31 @@ const OtherHeaders = () => {
 export default OtherHeaders;
 
 const styles = StyleSheet.create({
-  container: {
+  ContainerLight: {
     flexDirection: 'row',
-    elevation: 5,
     backgroundColor: 'white',
+    minHeight: 60,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 30,
+  },
+  ContainerDark: {
+    flexDirection: 'row',
+    backgroundColor: 'rgb(31 41 55)',
     minHeight: 60,
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
   },
-  HeaderText: {
-    fontSize: 20,
+  HeaderTextLight: {
+    fontSize: 25,
     color: 'black',
-    fontWeight: '600',
+    fontWeight: 'bold',
+  },
+  HeaderTextDark: {
+    fontSize: 20,
+    color: 'white',
+    fontWeight: 'bold',
   },
   NotificationIcon: {
     position: 'relative',
@@ -72,7 +70,6 @@ const styles = StyleSheet.create({
   },
   NotificationLeftContainer: {
     flexDirection: 'row',
-    backgroundColor: 'white',
     minHeight: 60,
     alignItems: 'center',
   },
@@ -81,6 +78,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 20,
     color: 'black',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
 });
